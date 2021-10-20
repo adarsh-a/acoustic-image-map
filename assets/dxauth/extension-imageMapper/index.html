@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"/>
+<meta name="description" content="The user can draw a new polygon by clicking where its points should go."/> 
+<!-- Copyright 1998-2021 by Northwoods Software Corporation. -->
+<title>Polygon Drawing Tool</title>
+</head>
+
+<body>
+  <!-- This top nav is not part of the sample code -->
+  
+    <!-- * * * * * * * * * * * * * -->
+    <!-- Start of GoJS sample code -->
+    
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.1.51/go.js"></script>
+  <script src="js/PolygonDrawingTool.js"></script>
+  <script src="js/GeometryReshapingTool.js"></script>
+
+  <script id="code">
+  function init() {
+    var $ = go.GraphObject.make;
+
+    myDiagram =
+      $(go.Diagram, "myDiagramDiv",{
+        allowHorizontalScroll: false,
+        allowVerticalScroll: false
+      });
+
+    myDiagram.toolManager.mouseDownTools.insertAt(3, new GeometryReshapingTool());
+    
+
+    myDiagram.nodeTemplateMap.add("PolygonDrawing",
+      $(go.Node,
+        { locationSpot: go.Spot.Center }, // to support rotation about the center
+        {
+      mouseEnter: mouseEnter,
+      mouseLeave: mouseLeave
+        },
+        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+        {
+          selectionAdorned: true, selectionObjectName: "SHAPE",
+          selectionAdornmentTemplate:  // custom selection adornment: a blue rectangle
+            $(go.Adornment, "Auto",
+              $(go.Shape, { stroke: "dodgerblue", fill: null }),
+              $(go.Placeholder, { margin: -1 }))
+        },
+        { resizable: true, resizeObjectName: "SHAPE" },
+        { rotatable: true, rotateObjectName: "SHAPE" },
+        { reshapable: true }, 
+      
+// GeometryReshapingTool assumes nonexistent Part.reshapeObjectName would be "SHAPE"
+        $(go.Shape,
+          { name: "SHAPE", fill: "lightgray", strokeWidth: 1.5 },
+          new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+          new go.Binding("angle").makeTwoWay(),
+          new go.Binding("geometryString", "geo").makeTwoWay(),
+          new go.Binding("fill"),
+          new go.Binding("stroke"),
+          new go.Binding("strokeWidth"))
+      ));
+
+    // create polygon drawing tool for myDiagram, defined in PolygonDrawingTool.js
+    var tool = new PolygonDrawingTool();
+    // provide the default JavaScript object for a new polygon in the model
+    tool.archetypePartData =
+      { fill: null, stroke: "blue", strokeWidth: 1, category: "PolygonDrawing" };
+    tool.isPolygon = true;  // for a polyline drawing tool set this property to false
+    tool.isEnabled = false;
+    // install as first mouse-down-tool
+    myDiagram.toolManager.mouseDownTools.insertAt(0, tool);
+
+    load();  // load a simple diagram from the textarea
+
+    
+  var picker = document.getElementById("img");
+  picker.addEventListener("change", evt => {
+   
+    // canvas.width = this.naturalWidth;     // update canvas size to match image
+    // canvas.height = this.naturalHeight; 
+      // draw in image
+	  newImage(URL.createObjectURL(event.target.files[0]))
+  })
+
+  var rawImg = new Image()
+
+  var canvas = document.querySelector("canvas");
+  var context = canvas.getContext('2d');
+  var rawImg = new Image();
+
+  const newImage = source => {
+    rawImg.src = source
+    
+    rawImg.onload = () => {
+      resize(rawImg.naturalHeight, rawImg.naturalWidth)
+      
+      canvas.style.backgroundImage = "url(" + source + ")"
+      canvas.style.backgroundRepeat = 'no-repeat';
+      canvas.style.backgroundSize="contain";
+
+    }
+  }
+
+  }
+  // resize the canvas for the image
+  var biggest = 400;
+  var axis
+  const resize = (x, y) => {
+    var canvas = document.querySelector("canvas");
+    var myDiagramDiv = document.getElementById("myDiagramDiv");
+
+    
+  // so that the biggest axis is always {biggest} px
+    var ratio = x > y ? x / biggest : y / biggest
+    axis = [x / ratio, y / ratio]
+    myDiagramDiv.style.height =axis[0]+"px"
+    myDiagramDiv.style.width = axis[1]+"px"
+    canvas.height =axis[0]
+    canvas.width = axis[1]
+   
+  }
+
+  function mouseEnter(e, obj) {
+    var shape = obj.findObject("SHAPE");
+    shape.fill = obj.data.hoverColor;
+    shape.stroke = obj.data.stroke;
+    // var text = obj.findObject("TEXT");
+    // text?.stroke = "white";
+  };
+  function mouseLeave(e, obj) {
+    var shape = obj.findObject("SHAPE");
+    // Return the Shape's fill and stroke to the defaults
+    shape.fill = obj.data.fill;
+    shape.stroke = obj.data.stroke;
+    // Return the TextBlock's stroke to its default
+    // var text = obj.findObject("TEXT");
+    // text.stroke = "black";
+  };
+  function mode(draw, polygon) {
+    // assume PolygonDrawingTool is the first tool in the mouse-down-tools list
+    var tool = myDiagram.toolManager.mouseDownTools.elt(0);
+    tool.isEnabled = draw;
+    tool.isPolygon = polygon;
+    tool.archetypePartData.fill = (polygon ? null : null);
+    tool.temporaryShape.fill = (polygon ? null : null);
+    if (draw) myDiagram.currentTool = tool;
+
+    // if(draw){
+      var inputText = document.getElementById("addedText");  
+      inputText.style.display = "block"
+      inputText.style.marginTop = "25px"
+
+      var colorFill = document.getElementById("colorFill");  
+      colorFill.style.display = "block"
+      colorFill.style.marginTop = "25px"
+
+      var eventGroup = document.getElementById("eventGroup");  
+      eventGroup.style.display = "block"
+      eventGroup.style.marginTop = "25px"
+      
+    // }
+    const checkbox = document.getElementById("noColor");
+    checkbox.addEventListener('change', (event) => {
+      if (event.currentTarget.checked) {
+        document.getElementById("colorpicker").style.display = "none"
+      } else {
+        document.getElementById("colorpicker").style.display = "inline-block"
+      }
+    })
+    
+  }
+
+  // this command ends the PolygonDrawingTool
+  function finish(commit) {
+    var tool = myDiagram.currentTool;
+    if (commit && tool instanceof PolygonDrawingTool) {
+      var lastInput = myDiagram.lastInput;
+      if (lastInput.event instanceof window.MouseEvent) tool.removeLastPoint();  // remove point from last mouse-down
+      tool.finishShape();
+    } else {
+      tool.doCancel();
+    }
+  }
+
+  // this command removes the last clicked point from the temporary Shape
+  function undo() {
+    var tool = myDiagram.currentTool;
+    if (tool instanceof PolygonDrawingTool) {
+      var lastInput = myDiagram.lastInput;
+      if (lastInput.event instanceof window.MouseEvent) tool.removeLastPoint();  // remove point from last mouse-down
+      tool.undo();
+    }
+  }
+
+  function updateAllAdornments() {  // called after checkboxes change Diagram.allow...
+    myDiagram.selection.each(function(p) { p.updateAdornments(); });
+  }
+
+  // save a model to and load a model from Json text, displayed below the Diagram
+  function save() {
+    var inputText = document.getElementById("addedText"); 
+    var colorDiv = document.getElementById("colorFill"); 
+    var colorFill = document.getElementById("colorpicker");
+    var events = document.getElementById("events");
+    var hoverColor = document.getElementById("hoverColor");
+    
+
+    let x = myDiagram.model.nodeDataArray.length -1;
+    myDiagram.model.nodeDataArray[x].text =  inputText?.value;
+    myDiagram.model.nodeDataArray[x].event =  events?.value;
+    myDiagram.model.nodeDataArray[x].hoverColor =  hoverColor?.value;
+
+    if(document.getElementById("noColor").checked == true){
+      myDiagram.model.nodeDataArray[x].fill=null
+    }
+    else{
+      myDiagram.model.nodeDataArray[x].fill =  colorFill?.value;
+    }
+      
+    var str = '{ "model": ' + myDiagram.model.toJson() + ' }';
+    document.getElementById("mySavedDiagram").value = str;
+    inputText.style.display = "none";
+    colorDiv.style.display= "none";
+    document.getElementById("eventGroup").style.display= "none";
+    load()
+  
+  }
+
+  function load() {
+    var str = document.getElementById("mySavedDiagram").value;
+    try {
+      var json = JSON.parse(str);
+      myDiagram.initialPosition = go.Point.parse(json.position || "0 0");
+      myDiagram.model = go.Model.fromJson(json.model);
+      myDiagram.model.undoManager.isEnabled = true;
+
+      myDiagram.animationManager.initialAnimationStyle = go.AnimationManager.None;
+
+    } catch (ex) {
+      alert(ex);
+    }
+  }
+  function previewOnclick(){
+    load();
+  }
+ 
+  window.addEventListener('DOMContentLoaded', init);
+</script>
+
+<div id="sample">
+  <div id="myDiagramDiv" style="border: solid 1px black;height:300px; width:400px "></div>
+  <div id="buttons">
+    <button onclick="mode(false)">Select</button>
+    <button onclick="mode(true, true)">Draw Polygon</button>
+    <button onclick="mode(true, false)">Draw Polyline</button>
+    <button onclick="finish(true)">Finish Drawing</button>
+    <button onclick="finish(false)">Cancel Drawing</button>
+    <button onclick="undo()">Undo Last Point-</button>
+    
+    <input type="file" id="img" name="img" accept="image/*">
+    <br/>
+
+    <input type="text" id="addedText" placeholder="Insert your text" style="display: none;">
+    <div id="colorFill" style="display: none;">
+      <label for="colorpicker">Fill colour:</label>
+      <input type="color" id="colorpicker" value="#0000ff">
+      <label for="noColor">No Colour</label>
+      <input type="checkbox" id="noColor" value="false">
+    </div>
+    <br/>
+    <div id="eventGroup" style="display: none;">
+      <label for="event">Choose  <select name="event" id="events">
+        <option value="onClick">onclick</option>
+        <option value="hover">Hover</option>
+      </select> to show the highlight  <input type="color" id="hoverColor" value="#0000ff"></label>
+    </div>
+
+   
+    <br/>
+    <label><input type="checkbox" onclick="myDiagram.allowResize = !myDiagram.allowResize; updateAllAdornments()" checked="checked" />Allow Resizing</label>
+    <label><input type="checkbox" onclick="myDiagram.allowReshape = !myDiagram.allowReshape; updateAllAdornments()" checked="checked" />Allow Reshaping</label>
+    <label><input type="checkbox" onclick="myDiagram.allowRotate = !myDiagram.allowRotate; updateAllAdornments()" checked="checked" />Allow Rotating</label>
+  </div>
+  <div>
+    <button onclick="save()">Save</button>
+    <button onClick="load()">Reload</button>
+  </div>
+  <textarea id="mySavedDiagram" style="width:100%;height:300px">
+    { 
+      "model": {
+        "nodeDataArray": [ ],
+        "linkDataArray": [  ]
+      } 
+    }
+  </textarea>
+</div>
+    </div>
+    <!-- * * * * * * * * * * * * * -->
+    <!--  End of GoJS sample code  -->
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</body>
+<!--  This script is part of the gojs.net website, and is not needed to run the sample -->
+</html>
