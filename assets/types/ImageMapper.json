@@ -1,0 +1,22 @@
+{
+  "name": "Component - Image Map",
+  "classification": "content-type",
+  "kind": [
+    "embedded",
+    "custom-ui"
+  ],
+  "description": "",
+  "status": "ready",
+  "tags": [],
+  "elements": [
+    {
+      "elementType": "text",
+      "label": "Color",
+      "key": "colorpicker"
+    }
+  ],
+  "icon": "optionselection",
+  "uiExtensions": {
+    "element": "/dxauth/extension-imageMapper/index.html"
+  }
+}

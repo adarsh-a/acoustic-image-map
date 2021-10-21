@@ -17,9 +17,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.1.51/go.js"></script>
   <script src="js/PolygonDrawingTool.js"></script>
   <script src="js/GeometryReshapingTool.js"></script>
+  <script src="https://content-us.goacoustic.com/auth/ibm-wch-ui-extensions.js"></script>
 
   <script id="code">
   function init() {
+    wchUIExt.requestResizeFrame(1500);
     var $ = go.GraphObject.make;
 
     myDiagram =
@@ -36,7 +38,9 @@
         { locationSpot: go.Spot.Center }, // to support rotation about the center
         {
       mouseEnter: mouseEnter,
-      mouseLeave: mouseLeave
+      mouseLeave: mouseLeave,
+      click: click,
+
         },
         new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
         {
@@ -73,7 +77,7 @@
 
     load();  // load a simple diagram from the textarea
 
-    
+  
   var picker = document.getElementById("img");
   picker.addEventListener("change", evt => {
    
@@ -120,13 +124,15 @@
     canvas.width = axis[1]
    
   }
-
+  function click(e, obj){
+    var shape = obj.findObject("SHAPE");
+    shape.fill = obj.data.onClickColor;
+    shape.stroke = obj.data.stroke;
+  }
   function mouseEnter(e, obj) {
     var shape = obj.findObject("SHAPE");
     shape.fill = obj.data.hoverColor;
     shape.stroke = obj.data.stroke;
-    // var text = obj.findObject("TEXT");
-    // text?.stroke = "white";
   };
   function mouseLeave(e, obj) {
     var shape = obj.findObject("SHAPE");
@@ -157,7 +163,7 @@
 
       var eventGroup = document.getElementById("eventGroup");  
       eventGroup.style.display = "block"
-      eventGroup.style.marginTop = "25px"
+
       
     // }
     const checkbox = document.getElementById("noColor");
@@ -166,6 +172,22 @@
         document.getElementById("colorpicker").style.display = "none"
       } else {
         document.getElementById("colorpicker").style.display = "inline-block"
+      }
+    })
+    const checkboxHover = document.getElementById("noHoverColor");
+    checkboxHover.addEventListener('change', (event) => {
+      if (event.currentTarget.checked) {
+        document.getElementById("hoverColor").style.display = "none"
+      } else {
+        document.getElementById("hoverColor").style.display = "inline-block"
+      }
+    })
+    const checkboxOnclick = document.getElementById("noOnclickColor");
+    checkboxOnclick.addEventListener('change', (event) => {
+      if (event.currentTarget.checked) {
+        document.getElementById("onClickColor").style.display = "none"
+      } else {
+        document.getElementById("onClickColor").style.display = "inline-block"
       }
     })
     
@@ -204,18 +226,33 @@
     var colorFill = document.getElementById("colorpicker");
     var events = document.getElementById("events");
     var hoverColor = document.getElementById("hoverColor");
+    var onClickColor = document.getElementById("onClickColor");
     
 
     let x = myDiagram.model.nodeDataArray.length -1;
     myDiagram.model.nodeDataArray[x].text =  inputText?.value;
     myDiagram.model.nodeDataArray[x].event =  events?.value;
-    myDiagram.model.nodeDataArray[x].hoverColor =  hoverColor?.value;
+
 
     if(document.getElementById("noColor").checked == true){
       myDiagram.model.nodeDataArray[x].fill=null
     }
     else{
       myDiagram.model.nodeDataArray[x].fill =  colorFill?.value;
+    }
+
+    if(document.getElementById("noHoverColor").checked == true){
+      myDiagram.model.nodeDataArray[x].hoverColor=null
+    }
+    else{
+      myDiagram.model.nodeDataArray[x].hoverColor =  hoverColor?.value;
+    }
+
+    if(document.getElementById("noOnclickColor").checked == true){
+      myDiagram.model.nodeDataArray[x].onClickColor=null
+    }
+    else{
+      myDiagram.model.nodeDataArray[x].onClickColor =  onClickColor?.value;
     }
       
     var str = '{ "model": ' + myDiagram.model.toJson() + ' }';
@@ -241,9 +278,8 @@
       alert(ex);
     }
   }
-  function previewOnclick(){
-    load();
-  }
+
+
  
   window.addEventListener('DOMContentLoaded', init);
 </script>
@@ -268,12 +304,15 @@
       <label for="noColor">No Colour</label>
       <input type="checkbox" id="noColor" value="false">
     </div>
-    <br/>
+    <br/> <br/>
     <div id="eventGroup" style="display: none;">
-      <label for="event">Choose  <select name="event" id="events">
-        <option value="onClick">onclick</option>
-        <option value="hover">Hover</option>
-      </select> to show the highlight  <input type="color" id="hoverColor" value="#0000ff"></label>
+      <label for="event"> Hover colour :  <input type="color" id="hoverColor" value="#0000ff"></label>
+      <label for="noHoverColor">No Colour</label>
+      <input type="checkbox" id="noHoverColor" value="false">
+      <br/> <br/>
+      <label for="event2"> Onclick colour :  <input type="color" id="onClickColor" value="#0000ff"></label>
+      <label for="noOnclickColor">No Colour</label>
+      <input type="checkbox" id="noOnclickColor" value="false">
     </div>
 
    
