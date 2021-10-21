@@ -17,6 +17,6 @@
   ],
   "icon": "imageMapArray",
   "uiExtensions": {
-    "element": "/dxauth/extension-imageMapper/index.html"
+    "element": "/dxauth/extension-imageMapper-v2/index.html"
   }
 }
