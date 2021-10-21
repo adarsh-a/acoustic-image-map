@@ -10,13 +10,13 @@
   "tags": [],
   "elements": [
     {
-      "elementType": "imageMapArray",
-      "label": "imageMapArray",
-      "key": "imageMapArray"
+      "elementType": "imageMap",
+      "label": "Image Map",
+      "key": "imageMap"
     }
   ],
-  "icon": "imageMapArray",
+  "icon": "Image Map",
   "uiExtensions": {
-    "element": "/dxauth/extension-imageMapper-v2/index.html"
+    "element": "/dxauth/extension-imageMapper-v6/index.html"
   }
 }

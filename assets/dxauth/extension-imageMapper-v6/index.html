@@ -75,7 +75,7 @@
     // install as first mouse-down-tool
     myDiagram.toolManager.mouseDownTools.insertAt(0, tool);
 
-    load();  // load a simple diagram from the textarea
+    // load();  // load a simple diagram from the textarea
 
   
   var picker = document.getElementById("img");
@@ -106,7 +106,29 @@
     }
   }
 
-  }
+  wchUIExt.requestResizeFrame(1000);
+  var mySavedDiagram = document.getElementById("mySavedDiagram");
+  wchUIExt.getDefinition().then((definition) => {
+      wchUIExt.getElement().then((element) => {
+          if (definition.elementType === "group") {
+              if (element.value) {
+                  if (element.value["mySavedDiagram"].value) {
+                    mySavedDiagram.value = element.value["mySavedDiagram"].value;
+                    load();
+                  }
+              }
+          } else {
+              if (element.value) {
+                mySavedDiagram.value = element.value;
+                load();
+              }
+          }
+      });
+  });
+  // var str = '{ "model": ' + myDiagram.model.toJson() + ' }';
+  // document.getElementById("mySavedDiagram").value = str;
+
+}
   // resize the canvas for the image
   var biggest = 400;
   var axis
@@ -163,7 +185,6 @@
 
       var eventGroup = document.getElementById("eventGroup");  
       eventGroup.style.display = "block"
-
       
     // }
     const checkbox = document.getElementById("noColor");
@@ -260,30 +281,33 @@
     inputText.style.display = "none";
     colorDiv.style.display= "none";
     document.getElementById("eventGroup").style.display= "none";
+    onInput()
     load()
 
-    wchUIExt.getDefinition().then((definition) => {
-            if (definition.elementType === "group") {
-                wchUIExt.setElement({
-                    elementType: "group",
-                    typeRef: definition.typeRef,
-                    value: {
-                        "imageMapArray": {
-                            elementType: "imageMapArray",
-                            array:str,
-                        }
-                    }
-                });
-            } else {
-                wchUIExt.setElement({
-                    elementType: "imageMapArray",
-                    array:str,
-                });
-            }
-        });
   
   }
-
+  function onInput() {
+    console.log(document.getElementById("mySavedDiagram").value)
+    wchUIExt.getDefinition().then((definition) => {
+        if (definition.elementType === "group") {
+            wchUIExt.setElement({
+                elementType: "group",
+                typeRef: definition.typeRef,
+                value: {
+                    "imageMap": {
+                        elementType: "text",
+                        value: document.getElementById("mySavedDiagram").value,
+                    }
+                }
+            });
+        } else {
+            wchUIExt.setElement({
+                elementType: "text",
+                value: document.getElementById("mySavedDiagram").value,
+            });
+        }
+    });
+  }
   function load() {
     var str = document.getElementById("mySavedDiagram").value;
     try {
@@ -299,8 +323,6 @@
     }
   }
 
-
- 
   window.addEventListener('DOMContentLoaded', init);
 </script>
 
@@ -342,7 +364,7 @@
     <label><input type="checkbox" onclick="myDiagram.allowRotate = !myDiagram.allowRotate; updateAllAdornments()" checked="checked" />Allow Rotating</label>
   </div>
   <div>
-    <button onclick="save()">SaveTest</button>
+    <button onclick="save()">Save*</button>
     <button onClick="load()">Reload</button>
   </div>
   <textarea id="mySavedDiagram" style="width:100%;height:300px">
