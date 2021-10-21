@@ -10,12 +10,12 @@
   "tags": [],
   "elements": [
     {
-      "elementType": "text",
-      "label": "Color",
-      "key": "colorpicker"
+      "elementType": "imageMapArray",
+      "label": "imageMapArray",
+      "key": "imageMapArray"
     }
   ],
-  "icon": "optionselection",
+  "icon": "imageMapArray",
   "uiExtensions": {
     "element": "/dxauth/extension-imageMapper/index.html"
   }

@@ -261,6 +261,26 @@
     colorDiv.style.display= "none";
     document.getElementById("eventGroup").style.display= "none";
     load()
+
+    wchUIExt.getDefinition().then((definition) => {
+            if (definition.elementType === "group") {
+                wchUIExt.setElement({
+                    elementType: "group",
+                    typeRef: definition.typeRef,
+                    value: {
+                        "imageMapArray": {
+                            elementType: "imageMapArray",
+                            array:str,
+                        }
+                    }
+                });
+            } else {
+                wchUIExt.setElement({
+                    elementType: "imageMapArray",
+                    array:str,
+                });
+            }
+        });
   
   }
 
