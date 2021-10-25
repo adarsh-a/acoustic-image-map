@@ -13,10 +13,15 @@
       "elementType": "imageMap",
       "label": "Image Map",
       "key": "imageMap"
+    },
+    {
+      "elementType":"imagePicker",
+      "label":"Image Picker",
+      "key":"imagePicker" 
     }
   ],
   "icon": "Image Map",
   "uiExtensions": {
-    "element": "/dxauth/extension-imageMapper-v6/index.html"
+    "element": "/dxauth/extension-imageMapper-v33/index.html"
   }
 }
