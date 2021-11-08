@@ -20,6 +20,23 @@
   <script src="https://content-us.goacoustic.com/auth/ibm-wch-ui-extensions.js"></script>
 
   <script id="code">
+    var parentObj = window.parent;
+    var hubId = "";
+
+    var srcLocation = parentObj[1].location;
+    if(srcLocation)
+    {
+    var pathName = srcLocation.pathname;
+    if(pathName)
+    {
+    var stringArr = pathName.split("/");
+    if(stringArr.length > 0)
+    {
+    hubId = stringArr[1];
+    }
+    }
+    }
+
   function init() {
     wchUIExt.requestResizeFrame(2000);
     var $ = go.GraphObject.make;
@@ -78,36 +95,13 @@
     // load();  // load a simple diagram from the textarea
 
   
-    var picker = document.getElementById("img");
-    picker.addEventListener("change", evt => {
-   
-    // canvas.width = this.naturalWidth;     // update canvas size to match image
-    // canvas.height = this.naturalHeight; 
-      // draw in image
-	  newImage(URL.createObjectURL(event.target.files[0]))
-  })
-
-  var rawImg = new Image()
-
-  var canvas = document.querySelector("canvas");
-  var context = canvas.getContext('2d');
-  var rawImg = new Image();
-
-  const newImage = source => {
-    rawImg.src = source
-    
-    rawImg.onload = () => {
-      resize(rawImg.naturalHeight, rawImg.naturalWidth)
-      
-      canvas.style.backgroundImage = "url(" + source + ")"
-      canvas.style.backgroundRepeat = 'no-repeat';
-      canvas.style.backgroundSize="contain";
-
-    }
-  }
+    // var picker = document.getElementById("img");
 
  
+    
+  }
   
+
   wchUIExt.requestResizeFrame(1000);
   var mySavedDiagram = document.getElementById("mySavedDiagram");
   wchUIExt.getDefinition().then((definition) => {
@@ -115,21 +109,20 @@
           if (definition.elementType === "group") {
               if (element.value) {
                   if (element.value["mySavedDiagram"].value) {
-                    mySavedDiagram.value = element.value["mySavedDiagram"].value;
-                    load();
+                    // mySavedDiagram.value = element.value["mySavedDiagram"].value
+                    load(element.value["mySavedDiagram"].value);
                   }
               }
           } else {
               if (element.value) {
-                mySavedDiagram.value = element.value;
-                load();
+                console.log(element)
+                // mySavedDiagram.value = element.value;
+                load(element.value);
               }
           }
       });
   });
-  
 
-}
   // resize the canvas for the image
   // var biggest = 400;
   var axis
@@ -249,7 +242,9 @@
     var events = document.getElementById("events");
     var hoverColor = document.getElementById("hoverColor");
     var onClickColor = document.getElementById("onClickColor");
-    
+    var imageName = document.getElementById("imageName").value;
+    var imageId = document.getElementById("imageId").value;
+    var imageTwoCode = document.getElementById("imageId").value.substring(0, 2);    
 
     let x = myDiagram.model.nodeDataArray.length -1;
     myDiagram.model.nodeDataArray[x].text =  inputText?.value;
@@ -276,12 +271,15 @@
     else{
       myDiagram.model.nodeDataArray[x].onClickColor =  onClickColor?.value;
     }
-      
-    var str = '{ "model": ' + myDiagram.model.toJson() + ' }';
-    document.getElementById("mySavedDiagram").value = str;
+     myDiagram.model.class = "https://content-eu-1.content-cms.com/"+hubId+"/dxdam/"+imageTwoCode+"/"+imageId+"/"+imageName
+    var str = '{ "model": ' + myDiagram.model.toJson() + ', "filename": "https://content-eu-1.content-cms.com/'+hubId+'/dxdam/'+imageTwoCode+'/'+imageId+'/'+imageName+'"}';
+
+    document.getElementById("mySavedDiagram").value = str
+
     inputText.style.display = "none";
     colorDiv.style.display= "none";
     document.getElementById("eventGroup").style.display= "none";
+
     onInput()
     load()
 
@@ -310,57 +308,76 @@
     });
   }
  
-  function load() {
+  function load(strLoad) {
     var str = document.getElementById("mySavedDiagram").value;
+    console.log(strLoad)
+    if(strLoad) {
+      str=  strLoad;
+    }
+    console.log(str)
     try {
       var json = JSON.parse(str);
+      console.log(json)
       myDiagram.initialPosition = go.Point.parse(json.position || "0 0");
       myDiagram.model = go.Model.fromJson(json.model);
       myDiagram.model.undoManager.isEnabled = true;
 
       myDiagram.animationManager.initialAnimationStyle = go.AnimationManager.None;
+      console.log(myDiagram.fileName)
+      loadOldImage(json.filename.toString())
 
     } catch (ex) {
       alert(ex);
     }
   }
-  // function loadImage(){
-  //   var rawImg = new Image()
+  function loadOldImage (str) {
+    var rawImg = new Image()
 
-  //   var canvas = document.querySelector("canvas");
-  //   var context = canvas.getContext('2d');
-  //   var rawImg = new Image();
+var canvas = document.querySelector("canvas");
+var context = canvas.getContext('2d');
+var rawImg = new Image();
 
-  //   const newImage = source => {
-  //     console.log(source+"bjhkfty")
-  //     rawImg.src = source
-      
-  //     rawImg.onload = () => {
-  //       resize(rawImg.naturalHeight, rawImg.naturalWidth)
+const newImage = source => {
+  rawImg.src = source
+  
+  rawImg.onload = () => {
+    resize(rawImg.naturalHeight, rawImg.naturalWidth)
+    
+    canvas.style.backgroundImage = "url(" + source + ")"
+    canvas.style.backgroundRepeat = 'no-repeat';
+    canvas.style.backgroundSize="contain";
+
+  }
+}
+newImage(str)
+  }
+    function loadImage (){
+      var rawImg = new Image()
+
+      var canvas = document.querySelector("canvas");
+      var context = canvas.getContext('2d');
+      var rawImg = new Image();
+
+      const newImage = source => {
+        rawImg.src = source
         
-  //       canvas.style.backgroundImage = "url(" + source + ")"
-  //       canvas.style.backgroundRepeat = 'no-repeat';
-  //       canvas.style.backgroundSize="contain";
+        rawImg.onload = () => {
+          resize(rawImg.naturalHeight, rawImg.naturalWidth)
+          
+          canvas.style.backgroundImage = "url(" + source + ")"
+          canvas.style.backgroundRepeat = 'no-repeat';
+          canvas.style.backgroundSize="contain";
 
-  //     }
-  //   }
-    // var link = "https://app.goacoustic.com/content/api/authoring/v1/resources/bd4f630b-3ea6-4dc4-b0f7-c2cc3f246414"
-    // console.log(link);
-    // console.log(document.getElementById("img").value)
+        }
+      }
+       var imageName = document.getElementById("imageName").value;
+       var imageId = document.getElementById("imageId").value;
+       var imageTwoCode = document.getElementById("imageId").value.substring(0, 2);
+      newImage("https://content-eu-1.content-cms.com/"+hubId+"/dxdam/"+imageTwoCode+"/"+imageId+"/"+imageName)
+     
 
-    // var xHttp = new XMLHttpRequest();
-    // console.log("here")
-    // xHttp.open("GET", link);
-    // xHttp.setRequestHeader("Content-type", "image/jpeg");
-    // xHttp.onreadystatechange = function () {
-    //   if (this.readyState == 4) {
-    //     if (this.status == 200) {
-    //       console.log(this.responseText);
-
-    //     }
-    //   }
-    // }
-    // xHttp.send();
+    }
+    
   
  
   window.addEventListener('DOMContentLoaded', init);
@@ -374,13 +391,19 @@
     <button onclick="mode(true, false)">Draw Polyline</button>
     <button onclick="finish(true)">Finish Drawing</button>
     <button onclick="finish(false)">Cancel Drawing</button>
-    <button onclick="undo()">Undo Last Point-</button>
+    <button onclick="undo()">Undo Last Point</button>
     
-    <input type="file" id="img" name="img" accept="image/*">
+    <!-- <input type="file" id="img" name="img" accept="image/*"> -->
     <br/>
     <!-- <label>Input image url </label><input type="text" id="img"/>
     <button onclick="loadImage()">Load Image</button> -->
+    <label for="imageId">Input Image Id</label>
+    <input type="text" id="imageId">
+    <br/> 
+    <label for="imageName">Input Image Name</label>
+    <input  type="text" id="imageName">
     <br/>
+    <button onclick="loadImage()">Load Image</button>
 
     <input type="text" id="addedText" placeholder="Insert your text" style="display: none;">
     <div id="colorFill" style="display: none;">
@@ -414,8 +437,8 @@
     { 
       "model": {
         "nodeDataArray": [ ],
-        "linkDataArray": [  ]
-      } 
+        "linkDataArray": [  ],
+        "imageFile":      } 
     }
   </textarea>
 </div>
