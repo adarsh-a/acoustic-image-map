@@ -236,28 +236,28 @@
     myDiagram.selection.each(function(p) { p.updateAdornments(); });
   }
   async function getFile () {
-    var fileId;
-    var fileName;
+    var fileIdAcoustic;
+    var fileNameAcoustic;
     var definition = await  wchUIExt.getDefinition()
     var element = await wchUIExt.getElement()
     if (definition.elementType === "group") {
         if (element.value) {
             if (element.value["mySavedDiagram"].value) {
               // mySavedDiagram.value = element.value["mySavedDiagram"].value
-              fileId = element.value["mySavedDiagram"].value["fileId"];
-              fileName = element.value["mySavedDiagram"].value["imageName"];
+              fileIdAcoustic = element.value["mySavedDiagram"].value["fileId"];
+              fileNameAcoustic = element.value["mySavedDiagram"].value["imageName"];
             }
         }
     } else {
         if (element.value) {
           console.log(element)
-          fileId = JSON.parse(element.value).fileId,
-          fileName =JSON.parse(element.value).imageName
+          fileIdAcoustic = JSON.parse(element.value).fileId,
+          fileNameAcoustic =JSON.parse(element.value).imageName
         }
     }    
     return {
-      fileId,
-      fileName
+      fileIdAcoustic,
+      fileNameAcoustic
     }
 
     
@@ -270,10 +270,9 @@
     var events = document.getElementById("events");
     var hoverColor = document.getElementById("hoverColor");
     var onClickColor = document.getElementById("onClickColor");
-    console.log(await getFile().fileId);
-    console.log(await getFile[0]);
-    var fileNameAcoustic = await getFile()["fileName"];
-    var fileIdAcoustic =  await getFile()["fileId"];
+
+    let { fileNameAcoustic, fileIdAcoustic } =await getFile();
+    
 
     if(fileNameAcoustic){
       var imageName= fileNameAcoustic;
