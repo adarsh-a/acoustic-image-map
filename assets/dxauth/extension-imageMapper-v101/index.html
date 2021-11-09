@@ -38,7 +38,7 @@
     }
 
   function init() {
-    wchUIExt.requestResizeFrame(2000);
+    wchUIExt.requestResizeFrame(1500);
     var $ = go.GraphObject.make;
 
     myDiagram =
@@ -94,11 +94,8 @@
 
     // load();  // load a simple diagram from the textarea
 
-  
     // var picker = document.getElementById("img");
 
- 
-    
   }
   
 
@@ -168,7 +165,7 @@
     tool.temporaryShape.fill = (polygon ? null : null);
     if (draw) myDiagram.currentTool = tool;
 
-    // if(draw){
+    if(draw){
       var inputText = document.getElementById("addedText");  
       inputText.style.display = "block"
       inputText.style.marginTop = "25px"
@@ -180,6 +177,11 @@
       var eventGroup = document.getElementById("eventGroup");  
       eventGroup.style.display = "block"
       
+    }
+    // else if(!draw){
+    //   var editColor = document.getElementById('editEvent');
+    //   editColor.style.display = "block"
+    //   editColor.style.marginTop = "25px"
     // }
     const checkbox = document.getElementById("noColor");
     checkbox.addEventListener('change', (event) => {
@@ -233,18 +235,66 @@
   function updateAllAdornments() {  // called after checkboxes change Diagram.allow...
     myDiagram.selection.each(function(p) { p.updateAdornments(); });
   }
+  async function getFile () {
+    var fileId;
+    var fileName;
+    var definition = await  wchUIExt.getDefinition()
+    var element = await wchUIExt.getElement()
+    if (definition.elementType === "group") {
+        if (element.value) {
+            if (element.value["mySavedDiagram"].value) {
+              // mySavedDiagram.value = element.value["mySavedDiagram"].value
+              fileId = element.value["mySavedDiagram"].value["fileId"];
+              fileName = element.value["mySavedDiagram"].value["imageName"];
+            }
+        }
+    } else {
+        if (element.value) {
+          console.log(element)
+          fileId = JSON.parse(element.value).fileId,
+          fileName =JSON.parse(element.value).imageName
+        }
+    }    
+    return {
+      fileId,
+      fileName
+    }
 
+    
+  }
   // save a model to and load a model from Json text, displayed below the Diagram
-  function save() {
+  async function save() {
     var inputText = document.getElementById("addedText"); 
     var colorDiv = document.getElementById("colorFill"); 
     var colorFill = document.getElementById("colorpicker");
     var events = document.getElementById("events");
     var hoverColor = document.getElementById("hoverColor");
     var onClickColor = document.getElementById("onClickColor");
-    var imageName = document.getElementById("imageName").value;
-    var imageId = document.getElementById("imageId").value;
-    var imageTwoCode = document.getElementById("imageId").value.substring(0, 2);    
+    console.log(await getFile().fileId);
+    console.log(await getFile[0]);
+    var fileNameAcoustic = await getFile()["fileName"];
+    var fileIdAcoustic =  await getFile()["fileId"];
+
+    if(fileNameAcoustic){
+      var imageName= fileNameAcoustic;
+      console.log(fileNameAcoustic) 
+      
+    }
+    else{
+      var imageName= document.getElementById("imageName").value;
+      console.log(document.getElementById("imageName").value) 
+    }
+
+    if(fileIdAcoustic){
+      var imageId= fileIdAcoustic; 
+      var imageTwoCode= fileIdAcoustic.substring(0, 2); 
+    }
+    else{
+      var imageId = document.getElementById("imageId").value;
+      var imageTwoCode = document.getElementById("imageId").value.substring(0, 2); 
+    }
+
+     
 
     let x = myDiagram.model.nodeDataArray.length -1;
     myDiagram.model.nodeDataArray[x].text =  inputText?.value;
@@ -271,8 +321,14 @@
     else{
       myDiagram.model.nodeDataArray[x].onClickColor =  onClickColor?.value;
     }
-     myDiagram.model.class = "https://content-eu-1.content-cms.com/"+hubId+"/dxdam/"+imageTwoCode+"/"+imageId+"/"+imageName
-    var str = '{ "model": ' + myDiagram.model.toJson() + ', "filename": "https://content-eu-1.content-cms.com/'+hubId+'/dxdam/'+imageTwoCode+'/'+imageId+'/'+imageName+'"}';
+    var str = `{
+    "model": 
+      ${myDiagram.model.toJson()},
+    "filename": "https://content-eu-1.content-cms.com/${hubId}/dxdam/${imageTwoCode}/${imageId}/${imageName}",
+    "fileId": "${imageId}",
+    "imageName": "${imageName}"
+    } `
+
 
     document.getElementById("mySavedDiagram").value = str
 
@@ -281,7 +337,7 @@
     document.getElementById("eventGroup").style.display= "none";
 
     onInput()
-    load()
+    load(str.filename)
 
   
   }
@@ -310,21 +366,26 @@
  
   function load(strLoad) {
     var str = document.getElementById("mySavedDiagram").value;
-    console.log(strLoad)
+    // console.log(strLoad)
     if(strLoad) {
       str=  strLoad;
     }
-    console.log(str)
+    // console.log(str)
+    document.getElementById("mySavedDiagram").value = str;
     try {
       var json = JSON.parse(str);
       console.log(json)
+      loadOldImage(json.filename.toString())
       myDiagram.initialPosition = go.Point.parse(json.position || "0 0");
       myDiagram.model = go.Model.fromJson(json.model);
       myDiagram.model.undoManager.isEnabled = true;
 
       myDiagram.animationManager.initialAnimationStyle = go.AnimationManager.None;
-      console.log(myDiagram.fileName)
-      loadOldImage(json.filename.toString())
+      // console.log(myDiagram.fileName)
+      if((json.fileId!="") || (json.imageName!="")){
+        document.getElementById("imageInfo").style.display="none";
+      }
+     
 
     } catch (ex) {
       alert(ex);
@@ -370,12 +431,10 @@ newImage(str)
 
         }
       }
-       var imageName = document.getElementById("imageName").value;
-       var imageId = document.getElementById("imageId").value;
-       var imageTwoCode = document.getElementById("imageId").value.substring(0, 2);
+      var imageName = document.getElementById("imageName").value;
+      var imageId = document.getElementById("imageId").value;
+      var imageTwoCode = document.getElementById("imageId").value.substring(0, 2);
       newImage("https://content-eu-1.content-cms.com/"+hubId+"/dxdam/"+imageTwoCode+"/"+imageId+"/"+imageName)
-     
-
     }
     
   
@@ -397,13 +456,16 @@ newImage(str)
     <br/>
     <!-- <label>Input image url </label><input type="text" id="img"/>
     <button onclick="loadImage()">Load Image</button> -->
-    <label for="imageId">Input Image Id</label>
-    <input type="text" id="imageId">
-    <br/> 
-    <label for="imageName">Input Image Name</label>
-    <input  type="text" id="imageName">
-    <br/>
-    <button onclick="loadImage()">Load Image</button>
+    <div id="imageInfo">
+      <label for="imageId">Input Image Id</label>
+      <input type="text" id="imageId">
+      <br/> 
+      <label for="imageName">Input Image Name</label>
+      <input  type="text" id="imageName">
+      <br/>
+      <button onclick="loadImage()">Load Image</button>
+    </div>
+    
 
     <input type="text" id="addedText" placeholder="Insert your text" style="display: none;">
     <div id="colorFill" style="display: none;">
@@ -422,12 +484,25 @@ newImage(str)
       <label for="noOnclickColor">No Colour</label>
       <input type="checkbox" id="noOnclickColor" value="false">
     </div>
+    <div style="display:none" id="editColor">
+      <label for="editColorpicker">Fill colour:</label>
+      <input type="color" id="editColorpicker" value="#0000ff">
+      <label for="editNoColor">No Colour</label>
+      <input type="checkbox" id="editNoColor" value="false">
+      <label for="editHover"> Hover colour :  <input type="color" id="editHover value="#0000ff"></label>
+      <label for="editNoHoverColor">No Colour</label>
+      <input type="checkbox" id="editNoHoverColor" value="false">
+      <br/> <br/>
+      <label for="editOnclickColor"> Onclick colour :  <input type="color" id="editOnclickColor" value="#0000ff"></label>
+      <label for="editNoOnclickColor">No Colour</label>
+      <input type="checkbox" id="editNoOnclickColor" value="false">
+    </div>
 
    
     <br/>
-    <label><input type="checkbox" onclick="myDiagram.allowResize = !myDiagram.allowResize; updateAllAdornments()" checked="checked" />Allow Resizing</label>
+    <!-- <label><input type="checkbox" onclick="myDiagram.allowResize = !myDiagram.allowResize; updateAllAdornments()" checked="checked" />Allow Resizing</label>
     <label><input type="checkbox" onclick="myDiagram.allowReshape = !myDiagram.allowReshape; updateAllAdornments()" checked="checked" />Allow Reshaping</label>
-    <label><input type="checkbox" onclick="myDiagram.allowRotate = !myDiagram.allowRotate; updateAllAdornments()" checked="checked" />Allow Rotating</label>
+    <label><input type="checkbox" onclick="myDiagram.allowRotate = !myDiagram.allowRotate; updateAllAdornments()" checked="checked" />Allow Rotating</label> -->
   </div>
   <div>
     <button onclick="save()">Save*</button>
@@ -438,7 +513,7 @@ newImage(str)
       "model": {
         "nodeDataArray": [ ],
         "linkDataArray": [  ],
-        "imageFile":      } 
+      } 
     }
   </textarea>
 </div>
