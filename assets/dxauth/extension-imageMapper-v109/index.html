@@ -112,7 +112,6 @@
               }
           } else {
               if (element.value) {
-                console.log(element)
                 // mySavedDiagram.value = element.value;
                 load(element.value);
               }
@@ -250,7 +249,6 @@
         }
     } else {
         if (element.value) {
-          console.log(element)
           fileIdAcoustic = JSON.parse(element.value).fileId,
           fileNameAcoustic =JSON.parse(element.value).imageName
         }
@@ -276,12 +274,9 @@
 
     if(fileNameAcoustic){
       var imageName= fileNameAcoustic;
-      console.log(fileNameAcoustic) 
-      
     }
     else{
-      var imageName= document.getElementById("imageName").value;
-      console.log(document.getElementById("imageName").value) 
+      var imageName= document.getElementById("imageName").value; 
     }
 
     if(fileIdAcoustic){
@@ -341,7 +336,6 @@
   
   }
   function onInput() {
-    console.log(document.getElementById("mySavedDiagram").value)
     wchUIExt.getDefinition().then((definition) => {
         if (definition.elementType === "group") {
             wchUIExt.setElement({
@@ -365,27 +359,23 @@
  
   function load(strLoad) {
     var str = document.getElementById("mySavedDiagram").value;
-    // console.log(strLoad)
     if(strLoad) {
       str=  strLoad;
     }
-    // console.log(str)
     document.getElementById("mySavedDiagram").value = str;
     try {
       var json = JSON.parse(str);
-      console.log(json)
       loadOldImage(json.filename.toString())
       myDiagram.initialPosition = go.Point.parse(json.position || "0 0");
       myDiagram.model = go.Model.fromJson(json.model);
       myDiagram.model.undoManager.isEnabled = true;
 
       myDiagram.animationManager.initialAnimationStyle = go.AnimationManager.None;
-      // console.log(myDiagram.fileName)
       if((json.fileId!="") || (json.imageName!="")){
         document.getElementById("imageInfo").style.display="none";
       }
      
-
+      wchUIExt.refresh
     } catch (ex) {
       alert(ex);
     }
@@ -393,23 +383,23 @@
   function loadOldImage (str) {
     var rawImg = new Image()
 
-var canvas = document.querySelector("canvas");
-var context = canvas.getContext('2d');
-var rawImg = new Image();
+    var canvas = document.querySelector("canvas");
+    var context = canvas.getContext('2d');
+    var rawImg = new Image();
 
-const newImage = source => {
-  rawImg.src = source
-  
-  rawImg.onload = () => {
-    resize(rawImg.naturalHeight, rawImg.naturalWidth)
-    
-    canvas.style.backgroundImage = "url(" + source + ")"
-    canvas.style.backgroundRepeat = 'no-repeat';
-    canvas.style.backgroundSize="contain";
+    const newImage = source => {
+      rawImg.src = source
+      
+      rawImg.onload = () => {
+        resize(rawImg.naturalHeight, rawImg.naturalWidth)
+        
+        canvas.style.backgroundImage = "url(" + source + ")"
+        canvas.style.backgroundRepeat = 'no-repeat';
+        canvas.style.backgroundSize="contain";
 
-  }
-}
-newImage(str)
+      }
+    }
+    newImage(str)
   }
     function loadImage (){
       var rawImg = new Image()
@@ -435,7 +425,22 @@ newImage(str)
       var imageTwoCode = document.getElementById("imageId").value.substring(0, 2);
       newImage("https://content-eu-1.content-cms.com/"+hubId+"/dxdam/"+imageTwoCode+"/"+imageId+"/"+imageName)
     }
-    
+    function changeImage () {
+      var imageNameChange = document.getElementById("imageNameChange").value;
+      var iamgeIdChange= document.getElementById("imageIdChange").value;
+      var iamgeIdChangeCode= iamgeIdChange.substring(0,2);
+      var link  = "https://content-eu-1.content-cms.com/"+hubId+"/dxdam/"+iamgeIdChangeCode+"/"+iamgeIdChange+"/"+imageNameChange
+      loadImage(link);
+
+      var str = `{
+      "model": 
+        ${myDiagram.model.toJson()},
+      "filename": "https://content-eu-1.content-cms.com/${hubId}/dxdam/${iamgeIdChangeCode}/${iamgeIdChange}/${imageNameChange}",
+      "fileId": "${iamgeIdChange}",
+      "imageName": "${imageNameChange}"
+      } `
+      document.getElementById("mySavedDiagram").value = str;
+    }
   
  
   window.addEventListener('DOMContentLoaded', init);
@@ -450,6 +455,7 @@ newImage(str)
     <button onclick="finish(true)">Finish Drawing</button>
     <button onclick="finish(false)">Cancel Drawing</button>
     <button onclick="undo()">Undo Last Point</button>
+   
     
     <!-- <input type="file" id="img" name="img" accept="image/*"> -->
     <br/>
@@ -464,7 +470,15 @@ newImage(str)
       <br/>
       <button onclick="loadImage()">Load Image</button>
     </div>
-    
+    <div id="imageInfoChange">
+      <label for="imageIdChange">Input Image Id</label>
+      <input type="text" id="imageIdChange">
+      <br/> 
+      <label for="imageNameChange">Input Image Name</label>
+      <input  type="text" id="imageNameChange">
+      <button onclick="changeImage()"> Change image</button>
+      <br/>
+    </div>
 
     <input type="text" id="addedText" placeholder="Insert your text" style="display: none;">
     <div id="colorFill" style="display: none;">
