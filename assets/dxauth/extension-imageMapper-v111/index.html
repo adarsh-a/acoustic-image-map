@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +7,7 @@
 <meta name="description" content="The user can draw a new polygon by clicking where its points should go."/> 
 <!-- Copyright 1998-2021 by Northwoods Software Corporation. -->
 <title>Polygon Drawing Tool</title>
-</head>
+<script >bazadebezolkohpepadr="833382855"</script><script type="text/javascript" src="https://content-eu-1.content-cms.com/akam/11/31ac6a0c"  defer></script></head>
 
 <body>
   <!-- This top nav is not part of the sample code -->
@@ -248,8 +249,9 @@
             }
         }
     } else {
-        if (element.value) {
-          fileIdAcoustic = JSON.parse(element.value).fileId,
+        if (element.value.length > 0) {
+		
+		  fileIdAcoustic = JSON.parse(element.value).fileId,
           fileNameAcoustic =JSON.parse(element.value).imageName
         }
     }    
@@ -359,7 +361,8 @@
  
   function load(strLoad) {
     var str = document.getElementById("mySavedDiagram").value;
-    if(strLoad) {
+	strLoad = strLoad.trim();
+    if(strLoad.length > 0) {
       str=  strLoad;
     }
     document.getElementById("mySavedDiagram").value = str;
@@ -377,10 +380,11 @@
      
       wchUIExt.refresh
     } catch (ex) {
-      alert(ex);
+      alert("am here " +ex);
     }
   }
   function loadOldImage (str) {
+    console.log(str)
     var rawImg = new Image()
 
     var canvas = document.querySelector("canvas");
@@ -430,7 +434,8 @@
       var iamgeIdChange= document.getElementById("imageIdChange").value;
       var iamgeIdChangeCode= iamgeIdChange.substring(0,2);
       var link  = "https://content-eu-1.content-cms.com/"+hubId+"/dxdam/"+iamgeIdChangeCode+"/"+iamgeIdChange+"/"+imageNameChange
-      loadImage(link);
+      loadOldImage(link);
+      console.log(link)
 
       var str = `{
       "model": 
@@ -440,6 +445,7 @@
       "imageName": "${imageNameChange}"
       } `
       document.getElementById("mySavedDiagram").value = str;
+      onInput()
     }
   
  
@@ -525,8 +531,11 @@
     { 
       "model": {
         "nodeDataArray": [ ],
-        "linkDataArray": [  ],
-      } 
+        "linkDataArray": [  ],		
+      }
+	  "filename": "",
+	  "fileId": "",
+	  "imageName": ""	  
     }
   </textarea>
 </div>
@@ -535,6 +544,6 @@
     <!--  End of GoJS sample code  -->
   </div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-</body>
+<noscript><img src="https://content-eu-1.content-cms.com/akam/11/pixel_31ac6a0c?a=dD0wMGFiMDhiNmYzNzUxYTE3ZWRiOGM3ZjJmY2JhOWU4NjVmZmZlMjYwJmpzPW9mZg==" style="visibility: hidden; position: absolute; left: -999px; top: -999px;" /></noscript></body>
 <!--  This script is part of the gojs.net website, and is not needed to run the sample -->
 </html>
