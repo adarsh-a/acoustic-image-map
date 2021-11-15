@@ -39,13 +39,16 @@
     }
 
   function init() {
+    // This function is the Node.dragComputation, to limit the movement of the parts.
+    
     wchUIExt.requestResizeFrame(1500);
     var $ = go.GraphObject.make;
 
     myDiagram =
       $(go.Diagram, "myDiagramDiv",{
         allowHorizontalScroll: false,
-        allowVerticalScroll: false
+        allowVerticalScroll: false,
+        initialPosition: new go.Point(0,0),
       });
 
     myDiagram.toolManager.mouseDownTools.insertAt(3, new GeometryReshapingTool());
@@ -61,6 +64,7 @@
 
         },
         new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+        new go.Binding("position", "pos", go.Point.parse).makeTwoWay(go.Point.stringify),
         {
           selectionAdorned: true, selectionObjectName: "SHAPE",
           selectionAdornmentTemplate:  // custom selection adornment: a blue rectangle
